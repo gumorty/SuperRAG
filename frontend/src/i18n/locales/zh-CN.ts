@@ -1471,7 +1471,7 @@ export default {
       wechatScanning: '请使用微信扫描二维码',
       wechatBindSuccess: '微信绑定成功',
       wechatRebind: '重新绑定',
-      wechatHint: '需要 iOS 微信 8.0.70+ 版本，仅支持单聊消息',
+      wechatHint: '请使用支持 ClawBot 的最新版微信扫码（Android / iOS），仅支持单聊消息',
       wechatQRExpired: '二维码已过期，请重新获取',
       wechatBinding: '绑定中...',
       sectionChannel: '渠道信息',

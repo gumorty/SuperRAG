@@ -29,6 +29,7 @@ type queryUnderstandOutput struct {
 	RewriteQuery     string            `json:"rewrite_query"`
 	Intent           types.QueryIntent `json:"intent"`
 	ImageDescription string            `json:"image_description"`
+	NeedsRetrieval   *bool             `json:"needs_retrieval,omitempty"`
 }
 
 // NewPluginQueryUnderstand creates a new query-understanding plugin instance
@@ -110,7 +111,7 @@ func (p *PluginQueryUnderstand) OnEvent(ctx context.Context,
 		userMsg.Images = chatManage.Images
 	}
 
-	maxTokens := 150
+	maxTokens := 256
 	if useImages {
 		// The image prompt asks for the full OCR text in image_description.
 		// At 500 tokens a text-heavy screenshot cut the JSON off, the parse
@@ -160,6 +161,7 @@ func (p *PluginQueryUnderstand) OnEvent(ctx context.Context,
 		"session_id":          chatManage.SessionID,
 		"rewrite_query":       chatManage.RewriteQuery,
 		"intent":              chatManage.Intent,
+		"needs_retrieval":     chatManage.NeedsRetrieval(),
 		"has_image_desc":      chatManage.ImageDescription != "",
 		"has_prompt_override": chatManage.SystemPromptOverride != "",
 		"original_output":     response.Content,
@@ -398,6 +400,7 @@ func (p *PluginQueryUnderstand) parseOutput(chatManage *types.ChatManage, raw st
 			chatManage.RewriteQuery = rewrite
 		}
 		chatManage.Intent = output.Intent
+		chatManage.RetrievalRequired = output.NeedsRetrieval
 		chatManage.ImageDescription = strings.TrimSpace(output.ImageDescription)
 		return
 	}
@@ -479,6 +482,12 @@ func parseStructuredQueryOutputJSON(content string) (queryUnderstandOutput, bool
 	}
 
 	out.Intent = types.NormalizeQueryIntent(firstStringField(obj, "intent"))
+	if raw, exists := obj["needs_retrieval"]; exists {
+		var needed *bool
+		if err := json.Unmarshal(raw, &needed); err == nil {
+			out.NeedsRetrieval = needed
+		}
+	}
 
 	desc := strings.TrimSpace(firstStringField(obj,
 		"image_description", "image_desc", "image_text", "image_ocr_text", "description"))

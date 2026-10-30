@@ -63,3 +63,27 @@ miniprogram/project.private.config.json
 
 # Locally built BrowserSkill runtime and extension bundles
 /artifacts/browserskill/
+
+# SuperRAG deployment secrets and private experiment material
+.env
+.env.*
+!.env.example
+!.env.lite.example
+!.dockerignore
+!.gitattributes
+!.golangci.yml
+!.air.toml
+docker-compose.local.yml
+config/builtin_models.yaml
+config/models.json
+/weknora-deployment-evidence/
+/evaluation-private/
+/backups/
+/uploads/
+*.dump
+*.sql.gz
+*.sse
+*-model-context.log
+*.db
+*.db-wal
+*.db-shm

@@ -590,6 +590,7 @@
 import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MessagePlugin } from 'tdesign-vue-next';
+import QRCode from 'qrcode';
 import { copyWithToast } from '@/utils/clipboard';
 import { normalizeOptionalString } from '@/utils/optionalString';
 import {
@@ -821,8 +822,8 @@ watch(
 // Whether WeChat credentials are already bound
 const wechatBound = computed(() => {
   return formData.value.platform === 'wechat' &&
-    formData.value.credentials.bot_token &&
-    formData.value.credentials.ilink_bot_id;
+    ((formData.value.credentials.bot_token && formData.value.credentials.ilink_bot_id) ||
+      editingChannel.value?.credentials_configured === true);
 });
 
 
@@ -880,8 +881,12 @@ async function startWeChatBinding() {
     wechatQRCode.value = res.data.qrcode;
     wechatQRStatus.value = 'wait';
 
-    // Generate QR code image via public API (no extra npm dependency needed)
-    wechatQRImgUrl.value = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(res.data.qrcode_url)}`;
+    // Keep the account-binding URL in the browser instead of sending it to a third party.
+    wechatQRImgUrl.value = await QRCode.toDataURL(res.data.qrcode_url, {
+      width: 240,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+    });
 
     // Start long-polling for scan status
     startStatusPolling();
@@ -1039,7 +1044,7 @@ async function handleSave() {
   saving.value = true;
   try {
     // For WeChat, validate that credentials are bound
-    if (formData.value.platform === 'wechat' && !formData.value.credentials.bot_token) {
+    if (formData.value.platform === 'wechat' && !wechatBound.value) {
       MessagePlugin.warning(t('agentEditor.im.wechatScanBind'));
       return;
     }
@@ -1061,7 +1066,10 @@ async function handleSave() {
         locale: formData.value.locale,
         session_mode: formData.value.session_mode,
         knowledge_base_id: normalizeOptionalString(formData.value.knowledge_base_id),
-        credentials: formData.value.credentials,
+        // List responses omit secrets. Preserve stored WeChat credentials unless a new QR binding supplied them.
+        ...(formData.value.platform !== 'wechat' || formData.value.credentials.bot_token
+          ? { credentials: formData.value.credentials }
+          : {}),
         enabled: editingEnabled.value,
         ...(formData.value.target_agent_id ? { agent_id: formData.value.target_agent_id } : {}),
       });

@@ -25,6 +25,7 @@ env:
 jobs:
   # ── 1. Build frontend once, share as artifact (for Web CLI) ──
   build-frontend:
+    if: github.repository == 'Tencent/WeKnora'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -49,6 +50,7 @@ jobs:
 
   # ── 2a. Build Web CLI binary per platform (native CGO) ──
   build-binary:
+    if: github.repository == 'Tencent/WeKnora'
     needs: build-frontend
     strategy:
       fail-fast: false
@@ -137,6 +139,7 @@ jobs:
 
   # ── 2b. Build Desktop APP per platform (Wails) ──
   build-desktop-app:
+    if: github.repository == 'Tencent/WeKnora'
     strategy:
       fail-fast: false
       matrix:
@@ -323,6 +326,7 @@ jobs:
 
   # ── 3. Create GitHub Release ──
   release:
+    if: github.repository == 'Tencent/WeKnora'
     needs: [build-binary, build-desktop-app]
     runs-on: ubuntu-latest
     steps:
@@ -415,6 +419,7 @@ jobs:
 
   # ── 4. Update Homebrew Formula ──
   update-homebrew:
+    if: github.repository == 'Tencent/WeKnora'
     needs: release
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,34 @@
+# Local deployment. Docker Compose loads this file automatically.
+services:
+  frontend:
+    # v0.8.3 with local QR rendering for the WeChat account-binding flow.
+    image: superrag-ui:0.8.3-local
+    build:
+      args:
+        VITE_FRONTEND_COMMIT: ${VITE_FRONTEND_COMMIT:-superrag-local}
+    ports: !override
+      # 8088 falls within a Windows reserved TCP range on this host.
+      - "127.0.0.1:${FRONTEND_PORT:-18088}:80"
+  app:
+    image: superrag-app:0.8.3-local
+    environment:
+      # LOG_FORMAT is a template in v0.8.3; use its default rather than an inherited "json" value.
+      LOG_FORMAT: ""
+      # Full model request tracing stays disabled outside bounded evaluation.
+      LLM_DEBUG_LOG: "false"
+    ports: !override
+      - "127.0.0.1:${APP_PORT:-18080}:8080"
+  redis:
+    volumes:
+      - redis-data:/data
+
+  neo4j:
+    # Graph data is accessed over the private Compose network.
+    ports: !reset []
+    environment:
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+
+volumes:
+  redis-data:

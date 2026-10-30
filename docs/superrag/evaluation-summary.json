@@ -1,0 +1,116 @@
+{
+  "evaluated_on": "2026-10-30",
+  "grading": "same-model assisted; not independent human certification",
+  "scope": "document-scoped canonical text QA; not full-library retrieval or complex PDF parsing",
+  "results": {
+    "paper_development_E": {
+      "attempts": 80,
+      "valid_answers": 80,
+      "invalid_attempts": [],
+      "median_seconds": 7.0095,
+      "p95_seconds": 14.22,
+      "tool_calls": {
+        "query_knowledge_graph": 80,
+        "search_knowledge": 58,
+        "read_document": 83,
+        "wiki_search": 27,
+        "wiki_read_page": 18,
+        "list_documents": 1
+      },
+      "questions_using_tool": {
+        "query_knowledge_graph": 80,
+        "search_knowledge": 57,
+        "read_document": 48,
+        "wiki_search": 26,
+        "wiki_read_page": 17,
+        "list_documents": 1
+      },
+      "questions_with_graph_relations": 70,
+      "questions_with_successful_wiki_read": 17,
+      "assisted_grade": {
+        "complete": 80
+      },
+      "claims_assisted": 313,
+      "unsupported_claims_assisted": 0,
+      "context_audit": {
+        "observed": 80,
+        "all_required_evidence": 78,
+        "mean_coverage": 0.9927083333333333,
+        "missing_cases": [
+          "Q041",
+          "Q044"
+        ],
+        "note": "Exact text check is conservative: equivalent supporting passages absent from frozen gold alternatives can count as misses. It does not prove attention or citation entailment."
+      }
+    },
+    "independent_original_B": {
+      "attempts": 52,
+      "valid_answers": 52,
+      "invalid_attempts": [],
+      "median_seconds": 5.609,
+      "p95_seconds": 10.111,
+      "tool_calls": {
+        "read_document": 75
+      },
+      "questions_using_tool": {
+        "read_document": 52
+      },
+      "questions_with_graph_relations": 0,
+      "questions_with_successful_wiki_read": 0,
+      "assisted_grade": {
+        "incorrect": 1,
+        "complete": 51
+      },
+      "claims_assisted": 311,
+      "unsupported_claims_assisted": 2,
+      "context_audit": {
+        "observed": 52,
+        "answerable_observed": 50,
+        "complete_evidence": 50,
+        "mean_best_unit_coverage": 1.0,
+        "misses": [],
+        "method": "Full human-annotated evidence paragraph text in final original-tool context; any accepted annotation may satisfy a case. Conservative when alternate valid passages exist. Unanswerable cases excluded from evidence recall denominator."
+      }
+    },
+    "independent_multisource_E": {
+      "attempts": 52,
+      "valid_answers": 52,
+      "invalid_attempts": [],
+      "median_seconds": 7.6105,
+      "p95_seconds": 12.31,
+      "tool_calls": {
+        "query_knowledge_graph": 55,
+        "wiki_search": 23,
+        "wiki_read_page": 19,
+        "read_document": 52,
+        "search_knowledge": 26
+      },
+      "questions_using_tool": {
+        "query_knowledge_graph": 52,
+        "wiki_search": 23,
+        "wiki_read_page": 19,
+        "read_document": 45,
+        "search_knowledge": 26
+      },
+      "questions_with_graph_relations": 31,
+      "questions_with_successful_wiki_read": 19,
+      "assisted_grade": {
+        "incorrect": 1,
+        "complete": 51
+      },
+      "claims_assisted": 318,
+      "unsupported_claims_assisted": 1,
+      "context_audit": {
+        "observed": 52,
+        "answerable_observed": 50,
+        "complete_evidence": 48,
+        "mean_best_unit_coverage": 0.97,
+        "misses": [
+          "H020",
+          "H056"
+        ],
+        "method": "Full human-annotated evidence paragraph text in final original-tool context; any accepted annotation may satisfy a case. Conservative when alternate valid passages exist. Unanswerable cases excluded from evidence recall denominator."
+      }
+    }
+  }
+}

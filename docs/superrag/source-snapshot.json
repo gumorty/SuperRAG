@@ -1,0 +1,7 @@
+{
+  "base_project": "https://github.com/Tencent/WeKnora",
+  "base_version": "0.8.3",
+  "source": "locally downloaded WeKnora-0.8.3.zip; no upstream Git ancestry claimed",
+  "archive_sha256": "b504a729b00dfe4e2fe41426bcfe758250f8877a115fcd2fb56b125dd95c4c39",
+  "license": "MIT with preserved third-party notices"
+}

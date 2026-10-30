@@ -36,6 +36,7 @@
     "papaparse": "^5.5.3",
     "pdfjs-dist": "^6.3.289",
     "pinia": "^3.0.4",
+    "qrcode": "1.5.4",
     "swiper": "^12.1.4",
     "tdesign-icons-vue-next": "0.4.4",
     "tdesign-vue-next": "^1.19.2",
@@ -50,6 +51,7 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.5",
     "@types/node": "^22.14.0",
+    "@types/qrcode": "1.5.6",
     "@vitejs/plugin-vue": "6.0.6",
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "@vue/tsconfig": "^0.9.1",

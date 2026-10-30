@@ -65,6 +65,14 @@ templates:
       - a follow-up asking to analyze/interpret an image or document from a PREVIOUS turn (described in history, not re-attached now) → `follow_up` (reasoning about already-described content, no KB search needed)
       - a follow-up that explicitly asks to search the knowledge base for related documents → `kb_search`
 
+      ## Independent retrieval decision
+      Always include the boolean `needs_retrieval`. Referencing a previous turn does NOT prove that its answer contains the newly requested facts.
+      Set true for new or additional document facts, all members of a list, another chapter, authors, reference counts, and details not explicitly evidenced in history. Do not use general model knowledge to fill missing document facts.
+      Set false only when this turn can be completed entirely from the visible history or attached content, such as translating, reformatting, or shortening the previous answer without adding facts. Greetings and casual conversation also need no KB retrieval.
+      Even if you classify a turn as `follow_up`, set needs_retrieval=true when new source evidence is needed. When unsure, use true.
+      Example: history only names a paper's corresponding author; "它的全部作者还有哪些人？" requires new retrieval, not a history-only answer.
+      Example: "把刚才的答案改成表格，不添加内容" needs_retrieval=false.
+
       ## Task 3: Image Analysis (only when images are attached)
       If the user's message includes images, you MUST provide a non-empty description in `image_description`. It must NOT be empty when images are present.
       Include objects, scene, layout, relationships, and any visible key details. If the image contains text, include complete OCR text in `image_description` as fully as possible (do not only output a short summary).
@@ -75,48 +83,51 @@ templates:
       You MUST output ONLY a single JSON object.
       Do NOT output markdown, code fences, explanations, or any extra text.
       JSON schema:
-      {"rewrite_query":"string","intent":"string","image_description":"string"}
+      {"rewrite_query":"string","intent":"string","image_description":"string","needs_retrieval":true}
 
       ## Examples
       Input: "你好"
-      Output: {"rewrite_query":"你好","intent":"greeting","image_description":""}
+      Output: {"rewrite_query":"你好","intent":"greeting","image_description":"","needs_retrieval":false}
 
       Input: "什么是RAG架构" (no history)
-      Output: {"rewrite_query":"什么是RAG架构","intent":"kb_search","image_description":""}
+      Output: {"rewrite_query":"什么是RAG架构","intent":"kb_search","image_description":"","needs_retrieval":true}
 
       Input: "它和传统搜索有什么区别" (history mentions RAG)
-      Output: {"rewrite_query":"RAG架构和传统搜索有什么区别","intent":"kb_search","image_description":""}
+      Output: {"rewrite_query":"RAG架构和传统搜索有什么区别","intent":"kb_search","image_description":"","needs_retrieval":true}
 
       Input: "再帮我查查他的信息" (history discusses 张三)
-      Output: {"rewrite_query":"张三的详细信息是什么","intent":"kb_search","image_description":""}
+      Output: {"rewrite_query":"张三的详细信息是什么","intent":"kb_search","image_description":"","needs_retrieval":true}
       WRONG output: {"rewrite_query":"请重新在知识库中查找关于张三的更多信息","intent":"kb_search","image_description":""}
       (WRONG: contains meta-instruction "在知识库中查找" instead of actual search keywords)
 
       Input: "上面第二点再展开讲讲" (history has detailed answer with numbered points)
-      Output: {"rewrite_query":"请展开讲讲上面回答中的第二点","intent":"follow_up","image_description":""}
+      Output: {"rewrite_query":"请展开讲讲上面回答中的第二点","intent":"follow_up","image_description":"","needs_retrieval":false}
+
+      Input: "它的全部作者还有哪些人？" (history only contains the corresponding author's name)
+      Output: {"rewrite_query":"这篇论文的全部作者有哪些？","intent":"follow_up","image_description":"","needs_retrieval":true}
 
       Input: [no image now; an image was uploaded and described in a PREVIOUS turn] "(a question that reasons about a detail of that previously-described image)"
-      Output: {"rewrite_query":"(self-contained question about the detail of the previously-described image)","intent":"follow_up","image_description":""}
+      Output: {"rewrite_query":"(self-contained question about the detail of the previously-described image)","intent":"follow_up","image_description":"","needs_retrieval":false}
       (NOTE: refers to an image already described in history, no re-attachment, and asks the model to reason about that image → follow_up, NOT kb_search)
 
       Input: [image attached] "知识库有没有类似的文件" (image shows a project architecture diagram about microservices)
-      Output: {"rewrite_query":"有没有关于微服务项目架构的文件","intent":"kb_search","image_description":"(image description here)"}
+      Output: {"rewrite_query":"有没有关于微服务项目架构的文件","intent":"kb_search","image_description":"(image description here)","needs_retrieval":true}
 
       Input: [image attached] "这张图是什么意思"
-      Output: {"rewrite_query":"这张图是什么意思","intent":"image_only","image_description":"(image description here)"}
+      Output: {"rewrite_query":"这张图是什么意思","intent":"image_only","image_description":"(image description here)","needs_retrieval":false}
 
       Input: [no image] "这幅春联的内容是什么"
-      Output: {"rewrite_query":"这幅春联的内容是什么","intent":"kb_search","image_description":""}
+      Output: {"rewrite_query":"这幅春联的内容是什么","intent":"kb_search","image_description":"","needs_retrieval":true}
       (NOTE: No image attached, so intent is kb_search, NOT image_only)
 
       Input: [document attached] "帮我总结一下这份文件"
-      Output: {"rewrite_query":"总结一下这份文件","intent":"doc_only","image_description":""}
+      Output: {"rewrite_query":"总结一下这份文件","intent":"doc_only","image_description":"","needs_retrieval":false}
 
       Input: "请整理知识库中的数据，用表格形式输出体检指标" (no history)
-      Output: {"rewrite_query":"体检指标数据整理","intent":"kb_search","image_description":""}
+      Output: {"rewrite_query":"体检指标数据整理","intent":"kb_search","image_description":"","needs_retrieval":true}
 
       Input: "请读取知识库中体检报告标签的报告，输出体检指标" (no history)
-      Output: {"rewrite_query":"体检报告标签 体检指标","intent":"kb_search","image_description":""}
+      Output: {"rewrite_query":"体检报告标签 体检指标","intent":"kb_search","image_description":"","needs_retrieval":true}
 
       ## Conversation History
       {{conversation}}

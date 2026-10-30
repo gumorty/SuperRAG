@@ -355,6 +355,7 @@ export interface IMChannel {
   session_mode?: 'user' | 'thread';
   knowledge_base_id?: string;
   credentials: Record<string, any>;
+  credentials_configured?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -167,7 +167,10 @@ func (c *ChatManage) RecordRetrievalCut(stage string, candidates int) {
 type PipelineState struct {
 	RewriteQuery string      `json:"rewrite_query,omitempty"`
 	Intent       QueryIntent `json:"intent,omitempty"`
-	History      []*History  `json:"history,omitempty"`
+	// RetrievalRequired separates a conversational follow-up from a decision
+	// that the previous answer contains all facts needed for this turn.
+	RetrievalRequired *bool      `json:"needs_retrieval,omitempty"`
+	History           []*History `json:"history,omitempty"`
 	// HistoryLoaded records that History was fetched this turn, so an empty
 	// History (a first turn) is not fetched again by a later stage.
 	HistoryLoaded bool `json:"-"`
@@ -232,6 +235,14 @@ func (c *ChatManage) NeedsRetrieval() bool {
 	if c.Intent == IntentWebSearch {
 		return c.WebSearchEnabled
 	}
+	if c.Intent == IntentFollowUp {
+		if c.RetrievalRequired != nil {
+			return *c.RetrievalRequired
+		}
+		// Older/custom rewrite prompts may omit the decision. With a selected
+		// knowledge scope, do not silently treat new facts as already known.
+		return len(c.KnowledgeBaseIDs) > 0 || len(c.KnowledgeIDs) > 0 || len(c.SearchTargets) > 0
+	}
 	return c.Intent.NeedsKBRetrieval()
 }
 
@@ -256,6 +267,11 @@ func NormalizeQueryIntent(raw string) QueryIntent {
 // PipelineContext fields (EventBus, MessageID, etc.) are NOT copied because they
 // are per-execution handles that should not be shared across clones.
 func (c *ChatManage) Clone() *ChatManage {
+	var retrievalRequired *bool
+	if c.RetrievalRequired != nil {
+		value := *c.RetrievalRequired
+		retrievalRequired = &value
+	}
 	knowledgeBaseIDs := make([]string, len(c.KnowledgeBaseIDs))
 	copy(knowledgeBaseIDs, c.KnowledgeBaseIDs)
 
@@ -342,6 +358,7 @@ func (c *ChatManage) Clone() *ChatManage {
 		PipelineState: PipelineState{
 			RewriteQuery:         c.RewriteQuery,
 			Intent:               c.Intent,
+			RetrievalRequired:    retrievalRequired,
 			ImageDescription:     c.ImageDescription,
 			QuotedContext:        c.QuotedContext,
 			SystemPromptOverride: c.SystemPromptOverride,

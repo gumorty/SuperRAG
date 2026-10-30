@@ -1,3 +1,22 @@
+# SuperRAG
+
+基于腾讯 [WeKnora v0.8.3](https://github.com/Tencent/WeKnora) 的科研知识库与多源 RAG 实验项目。重点研究原文混合检索、重排、Wiki 导航、知识图谱、完整证据回填和可复核测评。
+
+本仓库保留上游代码、许可证及第三方声明；Go 模块路径继续使用上游路径，以保持内部导入兼容。它是独立源码快照及本地改动的版本管理仓库，不是腾讯官方发行版。
+
+- [SuperRAG 部署与使用](docs/superrag/deployment.md)
+- [多源科研智能体配置模板](config/examples/superrag-research-agent.json)
+- [测评方法、结果与已知限制](docs/superrag/evaluation.md)
+- [原始上游说明](README_UPSTREAM.md) · [中文上游说明](README_CN.md) · [来源记录](docs/superrag/source-snapshot.json)
+
+当前保留的本地修改包括：微信绑定二维码本地渲染、图谱能力在智能体中显式声明、新事实追问的检索决策、引用别名处理、图谱补建与任务恢复工具。Wiki/图谱参与检索还依赖智能体工具配置及原文核验策略，并非所有快速问答会话都会自动走多源链路。
+
+2026-10-30 的独立、单文档范围测试：52 题中辅助评分正确完整 51 题，50 个可回答题中完整标注证据覆盖 48 题，P95 12.31 秒。这是阶段性测评，不代表复杂 PDF、全库跨文档检索或全部生产场景已经验收。原论文、账号、API Key、数据库和问答日志未包含在本仓库中。
+
+## 上游项目介绍
+
+以下保留 WeKnora 的原始介绍。SuperRAG 的启动步骤与实验边界请优先参考上面的项目文档。
+
 <p align="center">
   <a href="https://weknora.weixin.qq.com">
     <picture>

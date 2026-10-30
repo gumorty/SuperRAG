@@ -93,6 +93,9 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     else \
         make build-prod; \
     fi
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go build -o /app/graph-backfill ./cmd/graph-backfill && \
+    go build -o /app/rag-queue-control ./cmd/rag-queue-control
 RUN --mount=type=cache,target=/go/pkg/mod cp -r /go/pkg/mod/github.com/yanyiwu/ /app/yanyiwu/
 
 # Final stage
@@ -151,6 +154,7 @@ COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/dataset/samples ./dataset/samples
 COPY --from=builder /root/.duckdb /home/appuser/.duckdb
 COPY --from=builder /app/WeKnora .
+COPY --from=builder /app/graph-backfill /app/rag-queue-control ./
 COPY --from=builder /license-bundle/ ./
 
 # Copy and make entrypoint script executable

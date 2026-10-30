@@ -1510,20 +1510,24 @@ func (s *agentService) getKnowledgeBaseInfos(ctx context.Context, kbIDs []string
 // Surfaces are the static facts the hybrid agent prompt consults to pick its
 // retrieval strategy — the agent should NOT need to probe this via search.
 //
-// Returned values are a subset of {"wiki", "chunks"}:
+// Returned values are a subset of {"wiki", "chunks", "graph"}:
 //   - "wiki"   → the KB has wiki ingestion enabled (wiki_search / wiki_read_page)
 //   - "chunks" → the KB has vector and/or keyword (BM25) indexing enabled
 //     (knowledge_search / grep_chunks)
+//   - "graph"  → the KB has entity graph extraction enabled
 func kbRetrievalCapabilities(kb *types.KnowledgeBase) []string {
 	if kb == nil {
 		return nil
 	}
-	caps := make([]string, 0, 2)
+	caps := make([]string, 0, 3)
 	if kb.IsWikiEnabled() {
 		caps = append(caps, "wiki")
 	}
 	if kb.IsVectorEnabled() || kb.IsKeywordEnabled() {
 		caps = append(caps, "chunks")
+	}
+	if kb.Capabilities().Graph {
+		caps = append(caps, "graph")
 	}
 	return caps
 }

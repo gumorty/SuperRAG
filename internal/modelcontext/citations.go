@@ -134,8 +134,10 @@ func publicAttr(expression *regexp.Regexp, tag string) string {
 }
 
 var (
-	refTagRE       = regexp.MustCompile(`(?i)<ref\s+id\s*=\s*"([^"]+)"\s*/?>`)
-	refCandidateRE = regexp.MustCompile(`(?is)<ref(?:\s|$)[^>]*(?:>|$)`)
+	// Some OpenAI-compatible models emit cite instead of the requested ref.
+	// Accept only the same registered handles; this never makes a new source citable.
+	refTagRE       = regexp.MustCompile(`(?i)<(?:ref|cite)\s+id\s*=\s*"([^"]+)"\s*/?>`)
+	refCandidateRE = regexp.MustCompile(`(?is)<(?:ref(?:\s|$)|cite\s+id(?:\s|=|$))[^>]*(?:>|$)`)
 	modelKBTagRE   = regexp.MustCompile(`(?is)<kb(?:\s|$)[^>]*(?:>|$)`)
 	modelWebTagRE  = regexp.MustCompile(`(?is)<web(?:\s|$)[^>]*(?:>|$)`)
 )
@@ -248,6 +250,8 @@ func (d *citationStreamExpander) Feed(chunk string) string {
 			tag := data[:end+1]
 			if refTagRE.MatchString(tag) {
 				out.WriteString(d.registry.ExpandText(tag))
+			} else if isNamedTagStart(lower, "cite") && !refCandidateRE.MatchString(tag) {
+				out.WriteString(tag) // ordinary HTML cite, not a source handle
 			}
 			data = data[end+1:]
 			continue
@@ -268,7 +272,7 @@ func (d *citationStreamExpander) Feed(chunk string) string {
 }
 
 func isRefTagStart(value string) bool {
-	return isNamedTagStart(value, "ref")
+	return isNamedTagStart(value, "ref") || isNamedTagStart(value, "cite")
 }
 
 func isNamedTagStart(value, name string) bool {
@@ -284,7 +288,7 @@ func isNamedTagStart(value, name string) bool {
 }
 
 func isSourceTagPending(value string) bool {
-	for _, name := range []string{"ref", "kb", "web"} {
+	for _, name := range []string{"ref", "cite", "kb", "web"} {
 		prefix := "<" + name
 		if (len(value) <= len(prefix) && strings.HasPrefix(prefix, value)) || isNamedTagStart(value, name) {
 			return true
